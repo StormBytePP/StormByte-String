@@ -52,7 +52,7 @@
 namespace StormByte {
 	/**
 	 * @namespace String
-	 * @brief String module: owned UTF-8 and wide text on top of @ref CString / @ref WCString.
+	 * @brief String module: owned UTF-8 and wide text on top of @ref StormByte::CString / @ref StormByte::WCString.
 	 */
 	namespace String {
 		/**
