@@ -341,42 +341,42 @@ namespace StormByte {
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC String ToLower(std::string_view str) noexcept;
+				static String ToLower(std::string_view str) noexcept;
 
 				/**
 				 * @brief ASCII-letter upper case; UTF-8 otherwise copied.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC String ToUpper(std::string_view str) noexcept;
+				static String ToUpper(std::string_view str) noexcept;
 
 				/**
 				 * @brief Turns CR LF into LF.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC String SanitizeNewlines(std::string_view str) noexcept;
+				static String SanitizeNewlines(std::string_view str) noexcept;
 
 				/**
 				 * @brief Drops `isspace` bytes.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC String RemoveWhitespace(std::string_view str) noexcept;
+				static String RemoveWhitespace(std::string_view str) noexcept;
 
 				/**
 				 * @brief Optional sign plus ASCII digits.
 				 * @param str Source.
 				 * @return Whether @p str is an integer token.
 				 */
-				static STORMBYTE_STRING_PUBLIC bool IsInteger(std::string_view str) noexcept;
+				static bool IsInteger(std::string_view str) noexcept;
 
 				/**
 				 * @brief Whitespace-separated tokens. @p out is the caller’s container.
 				 * @param str Source.
 				 * @param[out] out Tokens.
 				 */
-				static STORMBYTE_STRING_PUBLIC void Split(std::string_view str, std::vector<String>& out) noexcept;
+				static void Split(std::string_view str, std::vector<String>& out) noexcept;
 
 				/**
 				 * @brief Tokens on @p delimiter. @p out is the caller’s container.
@@ -384,7 +384,7 @@ namespace StormByte {
 				 * @param delimiter Separator.
 				 * @param[out] out Tokens, including empty ones.
 				 */
-				static STORMBYTE_STRING_PUBLIC void Explode(std::string_view str, char delimiter, std::queue<String>& out) noexcept;
+				static void Explode(std::string_view str, char delimiter, std::queue<String>& out) noexcept;
 
 				/**
 				 * @brief ASCII-letter lower case of this text.

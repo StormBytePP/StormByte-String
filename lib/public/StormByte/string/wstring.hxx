@@ -340,42 +340,42 @@ namespace StormByte {
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC WString ToLower(std::wstring_view str) noexcept;
+				static WString ToLower(std::wstring_view str) noexcept;
 
 				/**
 				 * @brief ASCII-letter upper case; other code points copied.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC WString ToUpper(std::wstring_view str) noexcept;
+				static WString ToUpper(std::wstring_view str) noexcept;
 
 				/**
 				 * @brief Turns CR LF into LF.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC WString SanitizeNewlines(std::wstring_view str) noexcept;
+				static WString SanitizeNewlines(std::wstring_view str) noexcept;
 
 				/**
 				 * @brief Drops `iswspace` code units.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC WString RemoveWhitespace(std::wstring_view str) noexcept;
+				static WString RemoveWhitespace(std::wstring_view str) noexcept;
 
 				/**
 				 * @brief Optional sign plus ASCII digits.
 				 * @param str Source.
 				 * @return Whether @p str is an integer token.
 				 */
-				static STORMBYTE_STRING_PUBLIC bool IsInteger(std::wstring_view str) noexcept;
+				static bool IsInteger(std::wstring_view str) noexcept;
 
 				/**
 				 * @brief Whitespace-separated tokens. @p out is the caller’s container.
 				 * @param str Source.
 				 * @param[out] out Tokens.
 				 */
-				static STORMBYTE_STRING_PUBLIC void Split(std::wstring_view str, std::vector<WString>& out) noexcept;
+				static void Split(std::wstring_view str, std::vector<WString>& out) noexcept;
 
 				/**
 				 * @brief Tokens on @p delimiter. @p out is the caller’s container.
@@ -383,7 +383,7 @@ namespace StormByte {
 				 * @param delimiter Separator.
 				 * @param[out] out Tokens, including empty ones.
 				 */
-				static STORMBYTE_STRING_PUBLIC void Explode(std::wstring_view str, wchar_t delimiter, std::queue<WString>& out) noexcept;
+				static void Explode(std::wstring_view str, wchar_t delimiter, std::queue<WString>& out) noexcept;
 
 				/**
 				 * @brief ASCII-letter lower case of this text.
