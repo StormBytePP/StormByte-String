@@ -40,8 +40,8 @@
 
 #pragma once
 
-#include <StormByte/cstring.hxx>
 #include <StormByte/string/visibility.h>
+#include <StormByte/wcstring.hxx>
 
 #include <compare>
 #include <cstddef>
@@ -64,35 +64,34 @@ namespace StormByte {
 	 */
 	namespace String {
 		/**
-		 * @class WString
-		 * @brief Wide counterpart of @ref String. Defined in wstring.hxx.
+		 * @class String
+		 * @brief UTF-8 counterpart of @ref WString. Defined in string.hxx.
 		 */
-		class WString;
+		class String;
 
 		/**
-		 * @class String
-		 * @brief Owned UTF-8 text composed of @ref StormByte::CString.
+		 * @class WString
+		 * @brief Owned wide text composed of @ref StormByte::WCString.
 		 *
-		 * Not a `std::string`. Iterators are constant and contiguous so
-		 * algorithms that read a range of `char` work. In-place mutating
-		 * algorithms do not: helpers return a new @ref String.
+		 * Not a `std::wstring`. Iterators are constant and contiguous so
+		 * algorithms that read a range of `wchar_t` work. In-place mutating
+		 * algorithms do not: helpers return a new @ref WString.
 		 *
-		 * `operator std::string_view` is implicit and inline. `operator
-		 * std::string` is explicit and inline (caller heap).
+		 * `operator std::wstring_view` is implicit and inline. `operator
+		 * std::wstring` is explicit and inline (caller heap).
 		 *
-		 * Conversion to @ref WString is explicit and runs in the module
-		 * (UTF-8 → wide). Conversion from @ref WString copies UTF-8 in
-		 * the module.
+		 * Conversion to @ref String is explicit and runs in the module
+		 * (wide → UTF-8). Conversion from @ref String copies wide units
+		 * in the module.
 		 *
-		 * `ToUpper` / `ToLower` map only ASCII `A–Z` / `a–z`. Other
-		 * well-formed UTF-8 code points are copied. Ill-formed bytes are
-		 * copied one-by-one so a sequence is never split in the middle
-		 * of a valid character.
+		 * `ToUpper` / `ToLower` map only ASCII `A–Z` / `a–z` (as `wchar_t`).
+		 * Other code points are copied. On 16-bit `wchar_t`, a well-formed
+		 * surrogate pair is copied together.
 		 */
-		class STORMBYTE_STRING_PUBLIC String {
+		class STORMBYTE_STRING_PUBLIC WString {
 			public:
-				using value_type = char;	///< Byte type
-				using const_iterator = const char*;	///< Contiguous observer
+				using value_type = wchar_t;	///< Code unit type
+				using const_iterator = const wchar_t*;	///< Contiguous observer
 				using const_reverse_iterator = std::reverse_iterator<const_iterator>;	///< Reverse observer
 
 				/**
@@ -103,62 +102,62 @@ namespace StormByte {
 				/**
 				 * @brief Null text.
 				 */
-				String() noexcept;
+				WString() noexcept;
 
 				/**
-				 * @brief Copies a C string.
+				 * @brief Copies a wide C string.
 				 * @param str Source; may be null.
 				 */
-				explicit String(const char* str) noexcept;
+				explicit WString(const wchar_t* str) noexcept;
 
 				/**
 				 * @brief Copies a view into an owned NUL-terminated buffer.
 				 * @param str Source.
 				 */
-				explicit String(std::string_view str) noexcept;
+				explicit WString(std::wstring_view str) noexcept;
 
 				/**
 				 * @brief Takes an owned buffer.
 				 * @param text Buffer.
 				 */
-				explicit String(CString text) noexcept;
+				explicit WString(WCString text) noexcept;
 
 				/**
-				 * @brief UTF-8 from wide text.
-				 * @param other Wide source.
+				 * @brief Wide text from UTF-8.
+				 * @param other UTF-8 source.
 				 */
-				explicit String(const WString& other) noexcept;
+				explicit WString(const String& other) noexcept;
 
 				/**
 				 * @brief Copy constructor.
 				 * @param other Text to copy.
 				 */
-				String(const String& other) noexcept;
+				WString(const WString& other) noexcept;
 
 				/**
 				 * @brief Move constructor.
 				 * @param other Text to take. @p other becomes null.
 				 */
-				String(String&& other) noexcept;
+				WString(WString&& other) noexcept;
 
 				/**
 				 * @brief Releases the buffer.
 				 */
-				~String() noexcept = default;
+				~WString() noexcept = default;
 
 				/**
 				 * @brief Copy assignment.
 				 * @param other Text to copy.
 				 * @return *this.
 				 */
-				String& operator=(const String& other) noexcept;
+				WString& operator=(const WString& other) noexcept;
 
 				/**
 				 * @brief Move assignment.
 				 * @param other Text to take. @p other becomes null.
 				 * @return *this.
 				 */
-				String& operator=(String&& other) noexcept;
+				WString& operator=(WString&& other) noexcept;
 
 				/** @} */
 
@@ -180,7 +179,7 @@ namespace StormByte {
 				 * @return Iterator.
 				 */
 				inline const_iterator end() const noexcept {
-					const char* text = data();
+					const wchar_t* text = data();
 					return text ? text + size() : nullptr;
 				}
 
@@ -234,14 +233,14 @@ namespace StormByte {
 
 				/**
 				 * @brief Contiguous pointer; null when the buffer is null.
-				 * @return Pointer to the first byte.
+				 * @return Pointer to the first code unit.
 				 */
-				inline const char* data() const noexcept {
-					return static_cast<const char*>(m_text);
+				inline const wchar_t* data() const noexcept {
+					return static_cast<const wchar_t*>(m_text);
 				}
 
 				/**
-				 * @brief Byte count; `0` when null or empty.
+				 * @brief Code-unit count; `0` when null or empty.
 				 * @return Length.
 				 */
 				inline std::size_t size() const noexcept {
@@ -265,18 +264,18 @@ namespace StormByte {
 				}
 
 				/**
-				 * @brief Byte at @p index.
+				 * @brief Code unit at @p index.
 				 * @param index Position in `[0, size()]`. `size()` is the trailing NUL.
 				 * @return Character.
 				 * @note Null or `index > size()` is undefined and `assert`s when assertions are on.
 				 */
-				inline char operator[](std::size_t index) const noexcept {
+				inline wchar_t operator[](std::size_t index) const noexcept {
 					return m_text[index];
 				}
 
 				/**
 				 * @brief Whether a buffer is held.
-				 * @return `false` only for a null @ref CString. `""` is valid and empty.
+				 * @return `false` only for a null @ref WCString. `L""` is valid and empty.
 				 */
 				inline explicit operator bool() const noexcept {
 					return static_cast<bool>(m_text);
@@ -292,40 +291,40 @@ namespace StormByte {
 				/**
 				 * @brief Non-owning view of the text.
 				 * @return Empty view when the buffer is null.
-				 * @note Same lifetime as `std::string::c_str()`.
+				 * @note Same lifetime as `std::wstring::c_str()`.
 				 */
-				inline operator std::string_view() const noexcept {
-					return static_cast<std::string_view>(m_text);
+				inline operator std::wstring_view() const noexcept {
+					return static_cast<std::wstring_view>(m_text);
 				}
 
 				/**
 				 * @brief Copy of the text in the caller’s heap.
 				 * @return Empty string when the buffer is null.
 				 */
-				inline explicit operator std::string() const {
-					return static_cast<std::string>(m_text);
+				inline explicit operator std::wstring() const {
+					return static_cast<std::wstring>(m_text);
 				}
 
 				/**
 				 * @brief View of the owned buffer.
 				 * @return Buffer, or null.
-				 * @note Same lifetime as `std::string::c_str()`.
+				 * @note Same lifetime as `std::wstring::c_str()`.
 				 */
-				inline explicit operator const char*() const noexcept {
-					return static_cast<const char*>(m_text);
+				inline explicit operator const wchar_t*() const noexcept {
+					return static_cast<const wchar_t*>(m_text);
 				}
 
 				/**
-				 * @brief Wide text (UTF-8 decoded in the module).
-				 * @return Owned @ref WString.
+				 * @brief UTF-8 text (wide encoded in the module).
+				 * @return Owned @ref String.
 				 */
-				explicit operator WString() const noexcept;
+				explicit operator String() const noexcept;
 
 				/**
-				 * @brief Owned bytes.
-				 * @return Internal @ref CString.
+				 * @brief Owned code units.
+				 * @return Internal @ref WCString.
 				 */
-				inline const CString& Bytes() const noexcept {
+				inline const WCString& Bytes() const noexcept {
 					return m_text;
 				}
 
@@ -337,46 +336,46 @@ namespace StormByte {
 				 */
 
 				/**
-				 * @brief ASCII-letter lower case; UTF-8 otherwise copied.
+				 * @brief ASCII-letter lower case; other code points copied.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC String ToLower(std::string_view str) noexcept;
+				static STORMBYTE_STRING_PUBLIC WString ToLower(std::wstring_view str) noexcept;
 
 				/**
-				 * @brief ASCII-letter upper case; UTF-8 otherwise copied.
+				 * @brief ASCII-letter upper case; other code points copied.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC String ToUpper(std::string_view str) noexcept;
+				static STORMBYTE_STRING_PUBLIC WString ToUpper(std::wstring_view str) noexcept;
 
 				/**
 				 * @brief Turns CR LF into LF.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC String SanitizeNewlines(std::string_view str) noexcept;
+				static STORMBYTE_STRING_PUBLIC WString SanitizeNewlines(std::wstring_view str) noexcept;
 
 				/**
-				 * @brief Drops `isspace` bytes.
+				 * @brief Drops `iswspace` code units.
 				 * @param str Source.
 				 * @return New text.
 				 */
-				static STORMBYTE_STRING_PUBLIC String RemoveWhitespace(std::string_view str) noexcept;
+				static STORMBYTE_STRING_PUBLIC WString RemoveWhitespace(std::wstring_view str) noexcept;
 
 				/**
 				 * @brief Optional sign plus ASCII digits.
 				 * @param str Source.
 				 * @return Whether @p str is an integer token.
 				 */
-				static STORMBYTE_STRING_PUBLIC bool IsInteger(std::string_view str) noexcept;
+				static STORMBYTE_STRING_PUBLIC bool IsInteger(std::wstring_view str) noexcept;
 
 				/**
 				 * @brief Whitespace-separated tokens. @p out is the caller’s container.
 				 * @param str Source.
 				 * @param[out] out Tokens.
 				 */
-				static STORMBYTE_STRING_PUBLIC void Split(std::string_view str, std::vector<String>& out) noexcept;
+				static STORMBYTE_STRING_PUBLIC void Split(std::wstring_view str, std::vector<WString>& out) noexcept;
 
 				/**
 				 * @brief Tokens on @p delimiter. @p out is the caller’s container.
@@ -384,55 +383,55 @@ namespace StormByte {
 				 * @param delimiter Separator.
 				 * @param[out] out Tokens, including empty ones.
 				 */
-				static STORMBYTE_STRING_PUBLIC void Explode(std::string_view str, char delimiter, std::queue<String>& out) noexcept;
+				static STORMBYTE_STRING_PUBLIC void Explode(std::wstring_view str, wchar_t delimiter, std::queue<WString>& out) noexcept;
 
 				/**
 				 * @brief ASCII-letter lower case of this text.
 				 * @return New text.
 				 */
-				inline String ToLower() const noexcept {
-					return ToLower(static_cast<std::string_view>(*this));
+				inline WString ToLower() const noexcept {
+					return ToLower(static_cast<std::wstring_view>(*this));
 				}
 
 				/**
 				 * @brief ASCII-letter upper case of this text.
 				 * @return New text.
 				 */
-				inline String ToUpper() const noexcept {
-					return ToUpper(static_cast<std::string_view>(*this));
+				inline WString ToUpper() const noexcept {
+					return ToUpper(static_cast<std::wstring_view>(*this));
 				}
 
 				/**
 				 * @brief CR LF to LF on this text.
 				 * @return New text.
 				 */
-				inline String SanitizeNewlines() const noexcept {
-					return SanitizeNewlines(static_cast<std::string_view>(*this));
+				inline WString SanitizeNewlines() const noexcept {
+					return SanitizeNewlines(static_cast<std::wstring_view>(*this));
 				}
 
 				/**
-				 * @brief Drops `isspace` bytes from this text.
+				 * @brief Drops `iswspace` code units from this text.
 				 * @return New text.
 				 */
-				inline String RemoveWhitespace() const noexcept {
-					return RemoveWhitespace(static_cast<std::string_view>(*this));
+				inline WString RemoveWhitespace() const noexcept {
+					return RemoveWhitespace(static_cast<std::wstring_view>(*this));
 				}
 
 				/**
 				 * @brief Whether this text is an integer token.
-				 * @return Whether it matches @ref IsInteger(std::string_view).
+				 * @return Whether it matches @ref IsInteger(std::wstring_view).
 				 */
 				inline bool IsInteger() const noexcept {
-					return IsInteger(static_cast<std::string_view>(*this));
+					return IsInteger(static_cast<std::wstring_view>(*this));
 				}
 
 				/**
 				 * @brief Whitespace-separated tokens. The vector is built in the caller.
 				 * @return Tokens.
 				 */
-				inline std::vector<String> Split() const noexcept {
-					std::vector<String> out;
-					Split(static_cast<std::string_view>(*this), out);
+				inline std::vector<WString> Split() const noexcept {
+					std::vector<WString> out;
+					Split(static_cast<std::wstring_view>(*this), out);
 					return out;
 				}
 
@@ -441,9 +440,9 @@ namespace StormByte {
 				 * @param delimiter Separator.
 				 * @return Tokens, including empty ones.
 				 */
-				inline std::queue<String> Explode(char delimiter) const noexcept {
-					std::queue<String> out;
-					Explode(static_cast<std::string_view>(*this), delimiter, out);
+				inline std::queue<WString> Explode(wchar_t delimiter) const noexcept {
+					std::queue<WString> out;
+					Explode(static_cast<std::wstring_view>(*this), delimiter, out);
 					return out;
 				}
 
@@ -459,7 +458,7 @@ namespace StormByte {
 				 * @param other Other text.
 				 * @return Whether the texts are equal.
 				 */
-				inline bool operator==(const String& other) const noexcept {
+				inline bool operator==(const WString& other) const noexcept {
 					return m_text == other.m_text;
 				}
 
@@ -468,25 +467,25 @@ namespace StormByte {
 				 * @param other Other text.
 				 * @return Whether the texts differ.
 				 */
-				inline bool operator!=(const String& other) const noexcept {
+				inline bool operator!=(const WString& other) const noexcept {
 					return !(*this == other);
 				}
 
 				/**
-				 * @brief Content equality with a C string.
+				 * @brief Content equality with a wide C string.
 				 * @param str May be null.
 				 * @return Whether the texts are equal.
 				 */
-				inline bool operator==(const char* str) const noexcept {
+				inline bool operator==(const wchar_t* str) const noexcept {
 					return m_text == str;
 				}
 
 				/**
-				 * @brief Content inequality with a C string.
+				 * @brief Content inequality with a wide C string.
 				 * @param str May be null.
 				 * @return Whether the texts differ.
 				 */
-				inline bool operator!=(const char* str) const noexcept {
+				inline bool operator!=(const wchar_t* str) const noexcept {
 					return !(*this == str);
 				}
 
@@ -495,16 +494,16 @@ namespace StormByte {
 				 * @param other Other text.
 				 * @return Ordering.
 				 */
-				inline std::strong_ordering operator<=>(const String& other) const noexcept {
+				inline std::strong_ordering operator<=>(const WString& other) const noexcept {
 					return m_text <=> other.m_text;
 				}
 
 				/**
-				 * @brief Content order against a C string.
+				 * @brief Content order against a wide C string.
 				 * @param str May be null.
 				 * @return Ordering.
 				 */
-				inline std::strong_ordering operator<=>(const char* str) const noexcept {
+				inline std::strong_ordering operator<=>(const wchar_t* str) const noexcept {
 					return m_text <=> str;
 				}
 
@@ -514,10 +513,10 @@ namespace StormByte {
 				 * @brief Swaps buffers with @p other.
 				 * @param other Other text.
 				 */
-				void swap(String& other) noexcept;
+				void swap(WString& other) noexcept;
 
 			private:
-				CString m_text;	///< Owned bytes
+				WCString m_text;	///< Owned code units
 		};
 
 		/**
@@ -526,27 +525,27 @@ namespace StormByte {
 		 * @param text Source.
 		 * @return @p stream.
 		 */
-		inline std::ostream& operator<<(std::ostream& stream, const String& text) {
+		inline std::wostream& operator<<(std::wostream& stream, const WString& text) {
 			return stream << text.Bytes();
 		}
 
 		/**
 		 * @brief Content equality.
-		 * @param str C string; may be null.
+		 * @param str Wide C string; may be null.
 		 * @param text Text.
 		 * @return Whether the texts are equal.
 		 */
-		inline bool operator==(const char* str, const String& text) noexcept {
+		inline bool operator==(const wchar_t* str, const WString& text) noexcept {
 			return text == str;
 		}
 
 		/**
 		 * @brief Content inequality.
-		 * @param str C string; may be null.
+		 * @param str Wide C string; may be null.
 		 * @param text Text.
 		 * @return Whether the texts differ.
 		 */
-		inline bool operator!=(const char* str, const String& text) noexcept {
+		inline bool operator!=(const wchar_t* str, const WString& text) noexcept {
 			return text != str;
 		}
 
@@ -555,7 +554,7 @@ namespace StormByte {
 		 * @param left First text.
 		 * @param right Second text.
 		 */
-		inline void swap(String& left, String& right) noexcept {
+		inline void swap(WString& left, WString& right) noexcept {
 			left.swap(right);
 		}
 	}
@@ -565,13 +564,13 @@ namespace StormByte {
  * @brief Hash of the text (`0` when the view is empty and the buffer is null).
  */
 template<>
-struct std::hash<StormByte::String::String> {
+struct std::hash<StormByte::String::WString> {
 	/**
 	 * @brief Hashes @p text.
 	 * @param text Text.
 	 * @return Hash.
 	 */
-	std::size_t operator()(const StormByte::String::String& text) const noexcept {
-		return std::hash<std::string_view>{}(static_cast<std::string_view>(text));
+	std::size_t operator()(const StormByte::String::WString& text) const noexcept {
+		return std::hash<std::wstring_view>{}(static_cast<std::wstring_view>(text));
 	}
 };

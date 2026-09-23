@@ -46,71 +46,71 @@
 #include <string>
 #include <utility>
 
-using StormByte::CString;
+using StormByte::WCString;
 using StormByte::String::String;
 using StormByte::String::WString;
 namespace Text = StormByte::String::Text;
 
 namespace {
-	CString Own(std::string_view str) noexcept {
+	WCString Own(std::wstring_view str) noexcept {
 		if (str.empty())
-			return CString("");
+			return WCString(L"");
 
-		std::string copy(str);
-		return CString(copy.c_str());
+		std::wstring copy(str);
+		return WCString(copy.c_str());
 	}
 }
 
-String::String() noexcept = default;
+WString::WString() noexcept = default;
 
-String::String(const char* str) noexcept: m_text(str) {}
+WString::WString(const wchar_t* str) noexcept: m_text(str) {}
 
-String::String(std::string_view str) noexcept: m_text(Own(str)) {}
+WString::WString(std::wstring_view str) noexcept: m_text(Own(str)) {}
 
-String::String(CString text) noexcept: m_text(std::move(text)) {}
+WString::WString(WCString text) noexcept: m_text(std::move(text)) {}
 
-String::String(const WString& other) noexcept: m_text(StormByte::String::Utf8::FromWide(other)) {}
+WString::WString(const String& other) noexcept: m_text(StormByte::String::Utf8::ToWide(other)) {}
 
-String::String(const String& other) noexcept = default;
+WString::WString(const WString& other) noexcept = default;
 
-String::String(String&& other) noexcept = default;
+WString::WString(WString&& other) noexcept = default;
 
-String& String::operator=(const String& other) noexcept = default;
+WString& WString::operator=(const WString& other) noexcept = default;
 
-String& String::operator=(String&& other) noexcept = default;
+WString& WString::operator=(WString&& other) noexcept = default;
 
-void String::swap(String& other) noexcept {
+void WString::swap(WString& other) noexcept {
 	m_text.swap(other.m_text);
 }
 
-String::operator WString() const noexcept {
-	return WString(*this);
+WString::operator String() const noexcept {
+	return String(*this);
 }
 
-String String::ToLower(std::string_view str) noexcept {
-	return String(StormByte::String::Utf8::ToLower(str));
+WString WString::ToLower(std::wstring_view str) noexcept {
+	return WString(StormByte::String::Utf8::ToLower(str));
 }
 
-String String::ToUpper(std::string_view str) noexcept {
-	return String(StormByte::String::Utf8::ToUpper(str));
+WString WString::ToUpper(std::wstring_view str) noexcept {
+	return WString(StormByte::String::Utf8::ToUpper(str));
 }
 
-String String::SanitizeNewlines(std::string_view str) noexcept {
-	return String(CString(Text::SanitizeNewlines(str).c_str()));
+WString WString::SanitizeNewlines(std::wstring_view str) noexcept {
+	return WString(WCString(Text::SanitizeNewlines(str).c_str()));
 }
 
-String String::RemoveWhitespace(std::string_view str) noexcept {
-	return String(CString(Text::RemoveWhitespace(str).c_str()));
+WString WString::RemoveWhitespace(std::wstring_view str) noexcept {
+	return WString(WCString(Text::RemoveWhitespace(str).c_str()));
 }
 
-bool String::IsInteger(std::string_view str) noexcept {
+bool WString::IsInteger(std::wstring_view str) noexcept {
 	return Text::IsInteger(str);
 }
 
-void String::Split(std::string_view str, std::vector<String>& out) noexcept {
-	Text::Split<char, String>(str, out);
+void WString::Split(std::wstring_view str, std::vector<WString>& out) noexcept {
+	Text::Split<wchar_t, WString>(str, out);
 }
 
-void String::Explode(std::string_view str, char delimiter, std::queue<String>& out) noexcept {
-	Text::Explode<char, String>(str, delimiter, out);
+void WString::Explode(std::wstring_view str, wchar_t delimiter, std::queue<WString>& out) noexcept {
+	Text::Explode<wchar_t, WString>(str, delimiter, out);
 }
