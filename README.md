@@ -24,6 +24,7 @@ It depends on [StormByte](https://github.com/StormBytePP/StormByte) (Base) 2.0.0
 - **Conversion** — explicit `String` ↔ `WString` (UTF-8; ill-formed input becomes U+FFFD).
 - **Ordering** — content `==` / `!=` / `<=>`, `swap`, `std::hash`. A default object is null; `""` / `L""` is valid empty text. Null is not equal to empty.
 - **Algorithms** — `begin` / `end` / `data` / `size` so `<algorithm>` and `std::ranges` run on the object.
+- **Serialization** — `Serializable<String>` and `Serializable<WString>` write the same little-endian wire as `std::string` / `std::wstring`. The blob is a `StormByte::BinaryData`.
 
 On top of that, the types carry operations that show up constantly when text crosses a module boundary: `ToUpper` / `ToLower`, `SanitizeNewlines`, `RemoveWhitespace`, `IsInteger`, `Split` and `Explode`. Each one exists as a static and as an instance method. That list is not a Unicode toolkit and is not frozen; later releases can add more of the same kind.
 
@@ -59,6 +60,7 @@ On top of that, the types carry operations that show up constantly when text cro
 - [Split](#split)
 - [Explode](#explode)
 - [Algorithms](#algorithms)
+- [Serialization](#serialization)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -84,6 +86,7 @@ Headers:
 ```cpp
 #include <StormByte/string/string.hxx>
 #include <StormByte/string/wstring.hxx>
+#include <StormByte/string/serializable.hxx>
 ```
 
 ## Usage
@@ -265,6 +268,42 @@ int main() {
 ```
 
 `WString` is the same with `wchar_t` literals (`L"…"`, `L','`, `std::wstring_view`).
+
+### Serialization
+
+`String` and `WString` plug into Base’s `Serializable<T>`. Include `<StormByte/string/serializable.hxx>`.
+
+The wire is the same as `std::string` / `std::wstring`: little-endian `uint64` byte count, then raw UTF-8. A null `String` / `WString` is written as an empty payload. Decode always yields a non-null buffer (`""` / `L""` when the payload is empty).
+
+`Serialize()` returns a `StormByte::BinaryData`. That blob lives on Base’s heap, so it can cross a DLL boundary. Do not put `std::vector<std::byte>` in a public signature for the same job.
+
+```cpp
+#include <StormByte/binary_data.hxx>
+#include <StormByte/string/serializable.hxx>
+#include <StormByte/string/string.hxx>
+#include <StormByte/string/wstring.hxx>
+#include <iostream>
+
+using StormByte::BinaryData;
+using StormByte::Serializable;
+using StormByte::String::String;
+using StormByte::String::WString;
+
+int main() {
+	const String text("StormByte");
+	const BinaryData blob = Serializable<String>(text).Serialize();
+	auto back = Serializable<String>::Deserialize(blob);
+	if (back && back.value() == text)
+		std::cout << back.value() << std::endl;
+
+	const WString wide(L"StormByte");
+	const BinaryData same_wire = Serializable<WString>(wide).Serialize();
+	if (blob == same_wire)
+		std::cout << "UTF-8 wire matches" << std::endl;
+}
+```
+
+`Serializable<String>("StormByte")` and `Serializable<std::string>("StormByte")` produce the same bytes. The same holds for `WString` and `std::wstring`.
 
 ## Contributing
 

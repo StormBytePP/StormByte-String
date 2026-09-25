@@ -50,7 +50,7 @@ namespace StormByte {
 		return Detail::Codec<std::string>::Size(static_cast<std::string>(data));
 	}
 
-	std::vector<std::byte> Detail::Codec<String::String>::Write(const String::String& data) noexcept {
+	BinaryData Detail::Codec<String::String>::Write(const String::String& data) noexcept {
 		return Detail::Codec<std::string>::Write(static_cast<std::string>(data));
 	}
 
@@ -65,7 +65,7 @@ namespace StormByte {
 		return Detail::Codec<std::wstring>::Size(static_cast<std::wstring>(data));
 	}
 
-	std::vector<std::byte> Detail::Codec<String::WString>::Write(const String::WString& data) noexcept {
+	BinaryData Detail::Codec<String::WString>::Write(const String::WString& data) noexcept {
 		return Detail::Codec<std::wstring>::Write(static_cast<std::wstring>(data));
 	}
 
