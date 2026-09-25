@@ -40,13 +40,13 @@
 
 #pragma once
 
+#include <StormByte/binary_data.hxx>
 #include <StormByte/serializable.hxx>
 #include <StormByte/string/string.hxx>
 #include <StormByte/string/visibility.h>
 #include <StormByte/string/wstring.hxx>
 
 #include <span>
-#include <vector>
 
 /**
  * @namespace StormByte
@@ -77,9 +77,9 @@ namespace StormByte {
 			/**
 			 * @brief Encodes @p data.
 			 * @param data Value to encode.
-			 * @return Blob.
+			 * @return Blob owned by Base.
 			 */
-			static STORMBYTE_STRING_PUBLIC std::vector<std::byte> Write(const String::String& data) noexcept;
+			static STORMBYTE_STRING_PUBLIC BinaryData Write(const String::String& data) noexcept;
 
 			/**
 			 * @brief Decodes a @ref StormByte::String::String from the start of @p data.
@@ -108,9 +108,9 @@ namespace StormByte {
 			/**
 			 * @brief Encodes @p data.
 			 * @param data Value to encode.
-			 * @return Blob.
+			 * @return Blob owned by Base.
 			 */
-			static STORMBYTE_STRING_PUBLIC std::vector<std::byte> Write(const String::WString& data) noexcept;
+			static STORMBYTE_STRING_PUBLIC BinaryData Write(const String::WString& data) noexcept;
 
 			/**
 			 * @brief Decodes a @ref StormByte::String::WString from the start of @p data.
