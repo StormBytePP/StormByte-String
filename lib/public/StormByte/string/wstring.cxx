@@ -106,11 +106,3 @@ WString WString::RemoveWhitespace(std::wstring_view str) noexcept {
 bool WString::IsInteger(std::wstring_view str) noexcept {
 	return Text::IsInteger(str);
 }
-
-void WString::Split(std::wstring_view str, std::vector<WString>& out) noexcept {
-	Text::Split<wchar_t, WString>(str, out);
-}
-
-void WString::Explode(std::wstring_view str, wchar_t delimiter, std::queue<WString>& out) noexcept {
-	Text::Explode<wchar_t, WString>(str, delimiter, out);
-}

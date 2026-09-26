@@ -17,6 +17,7 @@ If you landed here from a release link and have not read the tree:
 
 - **String / WString.** `size`, `length` and `operator[]` take and return `Size`. That is a code-unit count, not a byte count.
 - **Serializable.** The wire size of `String` and `WString` is `ByteSize`, the same as Base.
+- **Split / Explode.** The fill is `STORMBYTE_FORCE_INLINE` in the caller, including the overloads that return the container. `inline` on an exported class can still be a call into the String DLL. `operator std::string` and `operator std::wstring` use the same macro so that copy stays on the caller heap.
 
 [Unreleased]: https://github.com/StormBytePP/StormByte-String/compare/1.0.0...HEAD
 

@@ -106,11 +106,3 @@ String String::RemoveWhitespace(std::string_view str) noexcept {
 bool String::IsInteger(std::string_view str) noexcept {
 	return Text::IsInteger(str);
 }
-
-void String::Split(std::string_view str, std::vector<String>& out) noexcept {
-	Text::Split<char, String>(str, out);
-}
-
-void String::Explode(std::string_view str, char delimiter, std::queue<String>& out) noexcept {
-	Text::Explode<char, String>(str, delimiter, out);
-}
