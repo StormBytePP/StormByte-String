@@ -89,6 +89,10 @@ namespace StormByte {
 		 * well-formed UTF-8 code points are copied. Ill-formed bytes are
 		 * copied one-by-one so a sequence is never split in the middle
 		 * of a valid character.
+		 *
+		 * Observers (`starts_with`, `ends_with`, `contains`, `find`,
+		 * `substr`, …) follow `std::string_view`. They do not throw and
+		 * they do not mutate. In-place edit is still a new @ref String.
 		 */
 		class STORMBYTE_STRING_PUBLIC String {
 			public:
@@ -333,6 +337,267 @@ namespace StormByte {
 				/** @} */
 
 				/**
+				 * @name Lookup
+				 * @{
+				 */
+
+				static constexpr Size npos{~0ull};	///< Not found. Not a `size_t`.
+
+				/**
+				 * @brief Whether the text begins with @p text.
+				 * @param text Prefix.
+				 * @return Match. Empty prefix matches.
+				 */
+				inline bool starts_with(std::string_view text) const noexcept {
+					return static_cast<std::string_view>(*this).starts_with(text);
+				}
+
+				/**
+				 * @brief Whether the text begins with @p ch.
+				 * @param ch Prefix byte.
+				 * @return Match.
+				 */
+				inline bool starts_with(char ch) const noexcept {
+					return static_cast<std::string_view>(*this).starts_with(ch);
+				}
+
+				/**
+				 * @brief Whether the text ends with @p text.
+				 * @param text Suffix.
+				 * @return Match. Empty suffix matches.
+				 */
+				inline bool ends_with(std::string_view text) const noexcept {
+					return static_cast<std::string_view>(*this).ends_with(text);
+				}
+
+				/**
+				 * @brief Whether the text ends with @p ch.
+				 * @param ch Suffix byte.
+				 * @return Match.
+				 */
+				inline bool ends_with(char ch) const noexcept {
+					return static_cast<std::string_view>(*this).ends_with(ch);
+				}
+
+				/**
+				 * @brief Whether @p text occurs.
+				 * @param text Needle.
+				 * @return Match. Empty needle matches.
+				 */
+				inline bool contains(std::string_view text) const noexcept {
+					return static_cast<std::string_view>(*this).contains(text);
+				}
+
+				/**
+				 * @brief Whether @p ch occurs.
+				 * @param ch Byte.
+				 * @return Match.
+				 */
+				inline bool contains(char ch) const noexcept {
+					return static_cast<std::string_view>(*this).contains(ch);
+				}
+
+				/**
+				 * @brief First occurrence of @p text at or after @p pos.
+				 * @param text Needle.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find(std::string_view text, Size pos = {}) const noexcept {
+					return FindAt(static_cast<std::string_view>(*this), text, pos);
+				}
+
+				/**
+				 * @brief First occurrence of @p ch at or after @p pos.
+				 * @param ch Byte.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find(char ch, Size pos = {}) const noexcept {
+					return FindAt(static_cast<std::string_view>(*this), ch, pos);
+				}
+
+				/**
+				 * @brief First occurrence of @p count bytes of @p text.
+				 * @param text Needle. May be null when @p count is zero.
+				 * @param pos Start, in code units.
+				 * @param count Bytes of @p text to use.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find(const char* text, Size pos, Size count) const noexcept {
+					return find(std::string_view(text, static_cast<std::size_t>(count)), pos);
+				}
+
+				/**
+				 * @brief Last occurrence of @p text at or before @p pos.
+				 * @param text Needle.
+				 * @param pos Highest start, in code units. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size rfind(std::string_view text, Size pos = npos) const noexcept {
+					return RFindAt(static_cast<std::string_view>(*this), text, pos);
+				}
+
+				/**
+				 * @brief Last occurrence of @p ch at or before @p pos.
+				 * @param ch Byte.
+				 * @param pos Highest start, in code units. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size rfind(char ch, Size pos = npos) const noexcept {
+					return RFindAt(static_cast<std::string_view>(*this), ch, pos);
+				}
+
+				/**
+				 * @brief Last occurrence of @p count bytes of @p text.
+				 * @param text Needle. May be null when @p count is zero.
+				 * @param pos Highest start, in code units.
+				 * @param count Bytes of @p text to use.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size rfind(const char* text, Size pos, Size count) const noexcept {
+					return rfind(std::string_view(text, static_cast<std::size_t>(count)), pos);
+				}
+
+				/**
+				 * @brief First byte that is in @p text, at or after @p pos.
+				 * @param text Set of bytes.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_first_of(std::string_view text, Size pos = {}) const noexcept {
+					const std::string_view self = *this;
+					if (pos > Size{self.size()})
+						return npos;
+					return FromIndex(self.find_first_of(text, static_cast<std::size_t>(pos)));
+				}
+
+				/**
+				 * @brief First @p ch at or after @p pos.
+				 * @param ch Byte.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_first_of(char ch, Size pos = {}) const noexcept {
+					return find(ch, pos);
+				}
+
+				/**
+				 * @brief Last byte that is in @p text, at or before @p pos.
+				 * @param text Set of bytes.
+				 * @param pos Highest index. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_last_of(std::string_view text, Size pos = npos) const noexcept {
+					const std::string_view self = *this;
+					const std::size_t start = pos == npos ? std::string_view::npos : static_cast<std::size_t>(pos);
+					return FromIndex(self.find_last_of(text, start));
+				}
+
+				/**
+				 * @brief Last @p ch at or before @p pos.
+				 * @param ch Byte.
+				 * @param pos Highest index. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_last_of(char ch, Size pos = npos) const noexcept {
+					return rfind(ch, pos);
+				}
+
+				/**
+				 * @brief First byte that is not in @p text, at or after @p pos.
+				 * @param text Set of bytes.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_first_not_of(std::string_view text, Size pos = {}) const noexcept {
+					const std::string_view self = *this;
+					if (pos > Size{self.size()})
+						return npos;
+					return FromIndex(self.find_first_not_of(text, static_cast<std::size_t>(pos)));
+				}
+
+				/**
+				 * @brief First byte other than @p ch, at or after @p pos.
+				 * @param ch Byte.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_first_not_of(char ch, Size pos = {}) const noexcept {
+					const std::string_view self = *this;
+					if (pos > Size{self.size()})
+						return npos;
+					return FromIndex(self.find_first_not_of(ch, static_cast<std::size_t>(pos)));
+				}
+
+				/**
+				 * @brief Last byte that is not in @p text, at or before @p pos.
+				 * @param text Set of bytes.
+				 * @param pos Highest index. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_last_not_of(std::string_view text, Size pos = npos) const noexcept {
+					const std::string_view self = *this;
+					const std::size_t start = pos == npos ? std::string_view::npos : static_cast<std::size_t>(pos);
+					return FromIndex(self.find_last_not_of(text, start));
+				}
+
+				/**
+				 * @brief Last byte other than @p ch, at or before @p pos.
+				 * @param ch Byte.
+				 * @param pos Highest index. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_last_not_of(char ch, Size pos = npos) const noexcept {
+					const std::string_view self = *this;
+					const std::size_t start = pos == npos ? std::string_view::npos : static_cast<std::size_t>(pos);
+					return FromIndex(self.find_last_not_of(ch, start));
+				}
+
+				/**
+				 * @brief Copy of a slice. Not a view.
+				 * @param pos Start, in code units.
+				 * @param count Length. @ref npos means through the end.
+				 * @return Owned text. Empty when @p pos is past @ref size. Does not throw.
+				 */
+				inline String substr(Size pos = {}, Size count = npos) const noexcept {
+					const std::string_view text = *this;
+					if (pos > Size{text.size()})
+						return String();
+					const std::size_t n = count == npos ? std::string_view::npos : static_cast<std::size_t>(count);
+					return String(text.substr(static_cast<std::size_t>(pos), n));
+				}
+
+				/**
+				 * @brief Same order as `std::string_view::compare`.
+				 * @param text Other text.
+				 * @return Negative, zero, or positive.
+				 */
+				inline int compare(std::string_view text) const noexcept {
+					return static_cast<std::string_view>(*this).compare(text);
+				}
+
+				/**
+				 * @brief First byte.
+				 * @return Byte.
+				 * @note Empty is undefined, same as `std::string::front`.
+				 */
+				inline char front() const noexcept {
+					return (*this)[Size{0}];
+				}
+
+				/**
+				 * @brief Last byte.
+				 * @return Byte.
+				 * @note Empty is undefined, same as `std::string::back`.
+				 */
+				inline char back() const noexcept {
+					return (*this)[size() - Size{1}];
+				}
+
+				/** @} */
+
+				/**
 				 * @name Helpers
 				 * @{
 				 */
@@ -544,6 +809,23 @@ namespace StormByte {
 				void swap(String& other) noexcept;
 
 			private:
+				static Size FromIndex(std::size_t index) noexcept {
+					return index == std::string_view::npos ? npos : Size{index};
+				}
+
+				template<typename Needle>
+				static Size FindAt(std::string_view self, Needle needle, Size pos) noexcept {
+					if (pos > Size{self.size()})
+						return npos;
+					return FromIndex(self.find(needle, static_cast<std::size_t>(pos)));
+				}
+
+				template<typename Needle>
+				static Size RFindAt(std::string_view self, Needle needle, Size pos) noexcept {
+					const std::size_t start = pos == npos ? std::string_view::npos : static_cast<std::size_t>(pos);
+					return FromIndex(self.rfind(needle, start));
+				}
+
 				CString m_text;	///< Owned bytes
 		};
 

@@ -249,6 +249,33 @@ int test_stream_null_writes_nothing() {
 	RETURN_TEST("test_stream_null_writes_nothing", result);
 }
 
+int test_lookup() {
+	int result = 0;
+	const String text("before\nafter\n");
+	ASSERT_TRUE("test_lookup", text.starts_with("before"));
+	ASSERT_TRUE("test_lookup", text.starts_with('b'));
+	ASSERT_TRUE("test_lookup", text.ends_with("after\n"));
+	ASSERT_TRUE("test_lookup", text.ends_with('\n'));
+	ASSERT_FALSE("test_lookup", text.ends_with("nope"));
+	ASSERT_TRUE("test_lookup", text.contains("after"));
+	ASSERT_TRUE("test_lookup", text.contains('\n'));
+	ASSERT_TRUE("test_lookup", text.find("after") == Size{7});
+	ASSERT_TRUE("test_lookup", text.find("missing") == String::npos);
+	ASSERT_TRUE("test_lookup", text.rfind('\n') == Size{12});
+	ASSERT_TRUE("test_lookup", text.find_first_of("axz") == Size{7});
+	ASSERT_EQUAL("test_lookup", std::string("after\n"), std::string(text.substr(Size{7})));
+	ASSERT_EQUAL("test_lookup", 'b', text.front());
+	ASSERT_EQUAL("test_lookup", '\n', text.back());
+	ASSERT_EQUAL("test_lookup", 0, text.compare("before\nafter\n"));
+	const WString wide(L"before\nafter\n");
+	ASSERT_TRUE("test_lookup", wide.ends_with(L"after\n"));
+	ASSERT_TRUE("test_lookup", wide.starts_with(L"before"));
+	ASSERT_TRUE("test_lookup", wide.contains(L"after"));
+	ASSERT_TRUE("test_lookup", wide.find(L"after") == Size{7});
+	ASSERT_EQUAL("test_lookup", std::wstring(L"after\n"), std::wstring(wide.substr(Size{7})));
+	RETURN_TEST("test_lookup", result);
+}
+
 int test_view_and_string() {
 	int result = 0;
 	String text("abc");
@@ -477,6 +504,7 @@ int main() {
 	result += test_free_stream_operator();
 	result += test_stream_null_writes_nothing();
 	result += test_view_and_string();
+	result += test_lookup();
 
 	// -------------------
 	// Copy / move
