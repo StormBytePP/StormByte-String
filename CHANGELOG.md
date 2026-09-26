@@ -13,6 +13,11 @@ If you landed here from a release link and have not read the tree:
 
 ## [Unreleased]
 
+### Changed
+
+- **String / WString.** `size`, `length` and `operator[]` take and return `Size`. That is a code-unit count, not a byte count.
+- **Serializable.** The wire size of `String` and `WString` is `ByteSize`, the same as Base.
+
 [Unreleased]: https://github.com/StormBytePP/StormByte-String/compare/1.0.0...HEAD
 
 ## [1.0.0] - 2026-09-23

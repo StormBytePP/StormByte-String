@@ -46,7 +46,7 @@ namespace StormByte {
 	template class STORMBYTE_STRING_INSTANTIATE Serializable<String::String>;
 	template class STORMBYTE_STRING_INSTANTIATE Serializable<String::WString>;
 
-	std::size_t Detail::Codec<String::String>::Size(const String::String& data) noexcept {
+	ByteSize Detail::Codec<String::String>::Size(const String::String& data) noexcept {
 		return Detail::Codec<std::string>::Size(static_cast<std::string>(data));
 	}
 
@@ -61,7 +61,7 @@ namespace StormByte {
 		return String::String(payload.value());
 	}
 
-	std::size_t Detail::Codec<String::WString>::Size(const String::WString& data) noexcept {
+	ByteSize Detail::Codec<String::WString>::Size(const String::WString& data) noexcept {
 		return Detail::Codec<std::wstring>::Size(static_cast<std::wstring>(data));
 	}
 

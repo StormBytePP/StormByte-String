@@ -241,17 +241,17 @@ namespace StormByte {
 
 				/**
 				 * @brief Code-unit count; `0` when null or empty.
-				 * @return Length.
+				 * @return Length as @ref StormByte::Size (code units, not bytes).
 				 */
-				inline std::size_t size() const noexcept {
+				inline Size size() const noexcept {
 					return m_text.Length();
 				}
 
 				/**
 				 * @brief Same as @ref size.
-				 * @return Length.
+				 * @return Length as @ref StormByte::Size.
 				 */
-				inline std::size_t length() const noexcept {
+				inline Size length() const noexcept {
 					return size();
 				}
 
@@ -269,7 +269,7 @@ namespace StormByte {
 				 * @return Character.
 				 * @note Null or `index > size()` is undefined and `assert`s when assertions are on.
 				 */
-				inline wchar_t operator[](std::size_t index) const noexcept {
+				inline wchar_t operator[](const Size& index) const noexcept {
 					return m_text[index];
 				}
 
