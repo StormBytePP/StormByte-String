@@ -42,11 +42,9 @@
 
 #include <cctype>
 #include <cwctype>
-#include <queue>
 #include <string>
 #include <string_view>
 #include <type_traits>
-#include <vector>
 
 /**
  * @namespace StormByte
@@ -153,53 +151,6 @@ namespace StormByte {
 						return false;
 				}
 				return true;
-			}
-
-			/**
-			 * @brief Whitespace-separated tokens. @p out is the caller’s container.
-			 * @tparam Char `char` or `wchar_t`.
-			 * @tparam StringT Constructible from `basic_string_view<Char>`.
-			 * @param str Source.
-			 * @param[out] out Tokens.
-			 */
-			template<typename Char, typename StringT>
-			inline void Split(std::basic_string_view<Char> str, std::vector<StringT>& out) noexcept {
-				out.clear();
-				std::size_t i = 0;
-				while (i < str.size()) {
-					while (i < str.size() && IsSpace(str[i]))
-						++i;
-					if (i >= str.size())
-						break;
-
-					std::size_t j = i;
-					while (j < str.size() && !IsSpace(str[j]))
-						++j;
-					out.emplace_back(str.substr(i, j - i));
-					i = j;
-				}
-			}
-
-			/**
-			 * @brief Tokens on @p delimiter. @p out is the caller’s container.
-			 * @tparam Char `char` or `wchar_t`.
-			 * @tparam StringT Constructible from `basic_string_view<Char>`.
-			 * @param str Source.
-			 * @param delimiter Separator.
-			 * @param[out] out Tokens, including empty ones.
-			 */
-			template<typename Char, typename StringT>
-			inline void Explode(std::basic_string_view<Char> str, Char delimiter, std::queue<StringT>& out) noexcept {
-				while (!out.empty())
-					out.pop();
-
-				std::size_t start = 0;
-				for (std::size_t i = 0; i <= str.size(); ++i) {
-					if (i == str.size() || str[i] == delimiter) {
-						out.emplace(str.substr(start, i - start));
-						start = i + 1;
-					}
-				}
 			}
 		}
 	}

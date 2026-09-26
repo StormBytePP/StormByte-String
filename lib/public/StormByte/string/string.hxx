@@ -43,6 +43,7 @@
 #include <StormByte/cstring.hxx>
 #include <StormByte/string/visibility.h>
 
+#include <cctype>
 #include <compare>
 #include <cstddef>
 #include <functional>
@@ -78,7 +79,7 @@ namespace StormByte {
 		 * algorithms do not: helpers return a new @ref String.
 		 *
 		 * `operator std::string_view` is implicit and inline. `operator
-		 * std::string` is explicit and inline (caller heap).
+		 * std::string` is explicit and `STORMBYTE_FORCE_INLINE` (caller heap).
 		 *
 		 * Conversion to @ref WString is explicit and runs in the module
 		 * (UTF-8 → wide). Conversion from @ref WString copies UTF-8 in
@@ -302,7 +303,7 @@ namespace StormByte {
 				 * @brief Copy of the text in the caller’s heap.
 				 * @return Empty string when the buffer is null.
 				 */
-				inline explicit operator std::string() const {
+				STORMBYTE_FORCE_INLINE explicit operator std::string() const {
 					return static_cast<std::string>(m_text);
 				}
 
@@ -375,16 +376,42 @@ namespace StormByte {
 				 * @brief Whitespace-separated tokens. @p out is the caller’s container.
 				 * @param str Source.
 				 * @param[out] out Tokens.
+				 * @note `STORMBYTE_FORCE_INLINE` so the container nodes are allocated in the caller.
 				 */
-				static void Split(std::string_view str, std::vector<String>& out) noexcept;
+				static STORMBYTE_FORCE_INLINE void Split(std::string_view str, std::vector<String>& out) noexcept {
+					out.clear();
+					std::size_t i = 0;
+					while (i < str.size()) {
+						while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i])) != 0)
+							++i;
+						if (i >= str.size())
+							break;
+						std::size_t j = i;
+						while (j < str.size() && std::isspace(static_cast<unsigned char>(str[j])) == 0)
+							++j;
+						out.emplace_back(str.substr(i, j - i));
+						i = j;
+					}
+				}
 
 				/**
 				 * @brief Tokens on @p delimiter. @p out is the caller’s container.
 				 * @param str Source.
 				 * @param delimiter Separator.
 				 * @param[out] out Tokens, including empty ones.
+				 * @note `STORMBYTE_FORCE_INLINE` so the container nodes are allocated in the caller.
 				 */
-				static void Explode(std::string_view str, char delimiter, std::queue<String>& out) noexcept;
+				static STORMBYTE_FORCE_INLINE void Explode(std::string_view str, char delimiter, std::queue<String>& out) noexcept {
+					while (!out.empty())
+						out.pop();
+					std::size_t start = 0;
+					for (std::size_t i = 0; i <= str.size(); ++i) {
+						if (i == str.size() || str[i] == delimiter) {
+							out.emplace(str.substr(start, i - start));
+							start = i + 1;
+						}
+					}
+				}
 
 				/**
 				 * @brief ASCII-letter lower case of this text.
@@ -430,7 +457,7 @@ namespace StormByte {
 				 * @brief Whitespace-separated tokens. The vector is built in the caller.
 				 * @return Tokens.
 				 */
-				inline std::vector<String> Split() const noexcept {
+				STORMBYTE_FORCE_INLINE std::vector<String> Split() const noexcept {
 					std::vector<String> out;
 					Split(static_cast<std::string_view>(*this), out);
 					return out;
@@ -441,7 +468,7 @@ namespace StormByte {
 				 * @param delimiter Separator.
 				 * @return Tokens, including empty ones.
 				 */
-				inline std::queue<String> Explode(char delimiter) const noexcept {
+				STORMBYTE_FORCE_INLINE std::queue<String> Explode(char delimiter) const noexcept {
 					std::queue<String> out;
 					Explode(static_cast<std::string_view>(*this), delimiter, out);
 					return out;

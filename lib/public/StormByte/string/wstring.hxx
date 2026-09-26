@@ -45,6 +45,7 @@
 
 #include <compare>
 #include <cstddef>
+#include <cwctype>
 #include <functional>
 #include <iterator>
 #include <ostream>
@@ -78,7 +79,7 @@ namespace StormByte {
 		 * algorithms do not: helpers return a new @ref WString.
 		 *
 		 * `operator std::wstring_view` is implicit and inline. `operator
-		 * std::wstring` is explicit and inline (caller heap).
+		 * std::wstring` is explicit and `STORMBYTE_FORCE_INLINE` (caller heap).
 		 *
 		 * Conversion to @ref String is explicit and runs in the module
 		 * (wide → UTF-8). Conversion from @ref String copies wide units
@@ -301,7 +302,7 @@ namespace StormByte {
 				 * @brief Copy of the text in the caller’s heap.
 				 * @return Empty string when the buffer is null.
 				 */
-				inline explicit operator std::wstring() const {
+				STORMBYTE_FORCE_INLINE explicit operator std::wstring() const {
 					return static_cast<std::wstring>(m_text);
 				}
 
@@ -374,16 +375,42 @@ namespace StormByte {
 				 * @brief Whitespace-separated tokens. @p out is the caller’s container.
 				 * @param str Source.
 				 * @param[out] out Tokens.
+				 * @note `STORMBYTE_FORCE_INLINE` so the container nodes are allocated in the caller.
 				 */
-				static void Split(std::wstring_view str, std::vector<WString>& out) noexcept;
+				static STORMBYTE_FORCE_INLINE void Split(std::wstring_view str, std::vector<WString>& out) noexcept {
+					out.clear();
+					std::size_t i = 0;
+					while (i < str.size()) {
+						while (i < str.size() && std::iswspace(static_cast<wint_t>(str[i])) != 0)
+							++i;
+						if (i >= str.size())
+							break;
+						std::size_t j = i;
+						while (j < str.size() && std::iswspace(static_cast<wint_t>(str[j])) == 0)
+							++j;
+						out.emplace_back(str.substr(i, j - i));
+						i = j;
+					}
+				}
 
 				/**
 				 * @brief Tokens on @p delimiter. @p out is the caller’s container.
 				 * @param str Source.
 				 * @param delimiter Separator.
 				 * @param[out] out Tokens, including empty ones.
+				 * @note `STORMBYTE_FORCE_INLINE` so the container nodes are allocated in the caller.
 				 */
-				static void Explode(std::wstring_view str, wchar_t delimiter, std::queue<WString>& out) noexcept;
+				static STORMBYTE_FORCE_INLINE void Explode(std::wstring_view str, wchar_t delimiter, std::queue<WString>& out) noexcept {
+					while (!out.empty())
+						out.pop();
+					std::size_t start = 0;
+					for (std::size_t i = 0; i <= str.size(); ++i) {
+						if (i == str.size() || str[i] == delimiter) {
+							out.emplace(str.substr(start, i - start));
+							start = i + 1;
+						}
+					}
+				}
 
 				/**
 				 * @brief ASCII-letter lower case of this text.
@@ -429,7 +456,7 @@ namespace StormByte {
 				 * @brief Whitespace-separated tokens. The vector is built in the caller.
 				 * @return Tokens.
 				 */
-				inline std::vector<WString> Split() const noexcept {
+				STORMBYTE_FORCE_INLINE std::vector<WString> Split() const noexcept {
 					std::vector<WString> out;
 					Split(static_cast<std::wstring_view>(*this), out);
 					return out;
@@ -440,7 +467,7 @@ namespace StormByte {
 				 * @param delimiter Separator.
 				 * @return Tokens, including empty ones.
 				 */
-				inline std::queue<WString> Explode(wchar_t delimiter) const noexcept {
+				STORMBYTE_FORCE_INLINE std::queue<WString> Explode(wchar_t delimiter) const noexcept {
 					std::queue<WString> out;
 					Explode(static_cast<std::wstring_view>(*this), delimiter, out);
 					return out;
