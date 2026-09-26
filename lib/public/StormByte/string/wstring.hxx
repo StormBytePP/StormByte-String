@@ -88,6 +88,10 @@ namespace StormByte {
 		 * `ToUpper` / `ToLower` map only ASCII `A–Z` / `a–z` (as `wchar_t`).
 		 * Other code points are copied. On 16-bit `wchar_t`, a well-formed
 		 * surrogate pair is copied together.
+		 *
+		 * Observers (`starts_with`, `ends_with`, `contains`, `find`,
+		 * `substr`, …) follow `std::wstring_view`. They do not throw and
+		 * they do not mutate. In-place edit is still a new @ref WString.
 		 */
 		class STORMBYTE_STRING_PUBLIC WString {
 			public:
@@ -332,6 +336,267 @@ namespace StormByte {
 				/** @} */
 
 				/**
+				 * @name Lookup
+				 * @{
+				 */
+
+				static constexpr Size npos{~0ull};	///< Not found. Not a `size_t`.
+
+				/**
+				 * @brief Whether the text begins with @p text.
+				 * @param text Prefix.
+				 * @return Match. Empty prefix matches.
+				 */
+				inline bool starts_with(std::wstring_view text) const noexcept {
+					return static_cast<std::wstring_view>(*this).starts_with(text);
+				}
+
+				/**
+				 * @brief Whether the text begins with @p ch.
+				 * @param ch Prefix code unit.
+				 * @return Match.
+				 */
+				inline bool starts_with(wchar_t ch) const noexcept {
+					return static_cast<std::wstring_view>(*this).starts_with(ch);
+				}
+
+				/**
+				 * @brief Whether the text ends with @p text.
+				 * @param text Suffix.
+				 * @return Match. Empty suffix matches.
+				 */
+				inline bool ends_with(std::wstring_view text) const noexcept {
+					return static_cast<std::wstring_view>(*this).ends_with(text);
+				}
+
+				/**
+				 * @brief Whether the text ends with @p ch.
+				 * @param ch Suffix code unit.
+				 * @return Match.
+				 */
+				inline bool ends_with(wchar_t ch) const noexcept {
+					return static_cast<std::wstring_view>(*this).ends_with(ch);
+				}
+
+				/**
+				 * @brief Whether @p text occurs.
+				 * @param text Needle.
+				 * @return Match. Empty needle matches.
+				 */
+				inline bool contains(std::wstring_view text) const noexcept {
+					return static_cast<std::wstring_view>(*this).contains(text);
+				}
+
+				/**
+				 * @brief Whether @p ch occurs.
+				 * @param ch Code unit.
+				 * @return Match.
+				 */
+				inline bool contains(wchar_t ch) const noexcept {
+					return static_cast<std::wstring_view>(*this).contains(ch);
+				}
+
+				/**
+				 * @brief First occurrence of @p text at or after @p pos.
+				 * @param text Needle.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find(std::wstring_view text, Size pos = {}) const noexcept {
+					return FindAt(static_cast<std::wstring_view>(*this), text, pos);
+				}
+
+				/**
+				 * @brief First occurrence of @p ch at or after @p pos.
+				 * @param ch Code unit.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find(wchar_t ch, Size pos = {}) const noexcept {
+					return FindAt(static_cast<std::wstring_view>(*this), ch, pos);
+				}
+
+				/**
+				 * @brief First occurrence of @p count units of @p text.
+				 * @param text Needle. May be null when @p count is zero.
+				 * @param pos Start, in code units.
+				 * @param count Units of @p text to use.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find(const wchar_t* text, Size pos, Size count) const noexcept {
+					return find(std::wstring_view(text, static_cast<std::size_t>(count)), pos);
+				}
+
+				/**
+				 * @brief Last occurrence of @p text at or before @p pos.
+				 * @param text Needle.
+				 * @param pos Highest start, in code units. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size rfind(std::wstring_view text, Size pos = npos) const noexcept {
+					return RFindAt(static_cast<std::wstring_view>(*this), text, pos);
+				}
+
+				/**
+				 * @brief Last occurrence of @p ch at or before @p pos.
+				 * @param ch Code unit.
+				 * @param pos Highest start, in code units. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size rfind(wchar_t ch, Size pos = npos) const noexcept {
+					return RFindAt(static_cast<std::wstring_view>(*this), ch, pos);
+				}
+
+				/**
+				 * @brief Last occurrence of @p count units of @p text.
+				 * @param text Needle. May be null when @p count is zero.
+				 * @param pos Highest start, in code units.
+				 * @param count Units of @p text to use.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size rfind(const wchar_t* text, Size pos, Size count) const noexcept {
+					return rfind(std::wstring_view(text, static_cast<std::size_t>(count)), pos);
+				}
+
+				/**
+				 * @brief First unit that is in @p text, at or after @p pos.
+				 * @param text Set of code units.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_first_of(std::wstring_view text, Size pos = {}) const noexcept {
+					const std::wstring_view self = *this;
+					if (pos > Size{self.size()})
+						return npos;
+					return FromIndex(self.find_first_of(text, static_cast<std::size_t>(pos)));
+				}
+
+				/**
+				 * @brief First @p ch at or after @p pos.
+				 * @param ch Code unit.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_first_of(wchar_t ch, Size pos = {}) const noexcept {
+					return find(ch, pos);
+				}
+
+				/**
+				 * @brief Last unit that is in @p text, at or before @p pos.
+				 * @param text Set of code units.
+				 * @param pos Highest index. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_last_of(std::wstring_view text, Size pos = npos) const noexcept {
+					const std::wstring_view self = *this;
+					const std::size_t start = pos == npos ? std::wstring_view::npos : static_cast<std::size_t>(pos);
+					return FromIndex(self.find_last_of(text, start));
+				}
+
+				/**
+				 * @brief Last @p ch at or before @p pos.
+				 * @param ch Code unit.
+				 * @param pos Highest index. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_last_of(wchar_t ch, Size pos = npos) const noexcept {
+					return rfind(ch, pos);
+				}
+
+				/**
+				 * @brief First unit that is not in @p text, at or after @p pos.
+				 * @param text Set of code units.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_first_not_of(std::wstring_view text, Size pos = {}) const noexcept {
+					const std::wstring_view self = *this;
+					if (pos > Size{self.size()})
+						return npos;
+					return FromIndex(self.find_first_not_of(text, static_cast<std::size_t>(pos)));
+				}
+
+				/**
+				 * @brief First unit other than @p ch, at or after @p pos.
+				 * @param ch Code unit.
+				 * @param pos Start, in code units.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_first_not_of(wchar_t ch, Size pos = {}) const noexcept {
+					const std::wstring_view self = *this;
+					if (pos > Size{self.size()})
+						return npos;
+					return FromIndex(self.find_first_not_of(ch, static_cast<std::size_t>(pos)));
+				}
+
+				/**
+				 * @brief Last unit that is not in @p text, at or before @p pos.
+				 * @param text Set of code units.
+				 * @param pos Highest index. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_last_not_of(std::wstring_view text, Size pos = npos) const noexcept {
+					const std::wstring_view self = *this;
+					const std::size_t start = pos == npos ? std::wstring_view::npos : static_cast<std::size_t>(pos);
+					return FromIndex(self.find_last_not_of(text, start));
+				}
+
+				/**
+				 * @brief Last unit other than @p ch, at or before @p pos.
+				 * @param ch Code unit.
+				 * @param pos Highest index. Default is the end.
+				 * @return Index, or @ref npos.
+				 */
+				inline Size find_last_not_of(wchar_t ch, Size pos = npos) const noexcept {
+					const std::wstring_view self = *this;
+					const std::size_t start = pos == npos ? std::wstring_view::npos : static_cast<std::size_t>(pos);
+					return FromIndex(self.find_last_not_of(ch, start));
+				}
+
+				/**
+				 * @brief Copy of a slice. Not a view.
+				 * @param pos Start, in code units.
+				 * @param count Length. @ref npos means through the end.
+				 * @return Owned text. Empty when @p pos is past @ref size. Does not throw.
+				 */
+				inline WString substr(Size pos = {}, Size count = npos) const noexcept {
+					const std::wstring_view text = *this;
+					if (pos > Size{text.size()})
+						return WString();
+					const std::size_t n = count == npos ? std::wstring_view::npos : static_cast<std::size_t>(count);
+					return WString(text.substr(static_cast<std::size_t>(pos), n));
+				}
+
+				/**
+				 * @brief Same order as `std::wstring_view::compare`.
+				 * @param text Other text.
+				 * @return Negative, zero, or positive.
+				 */
+				inline int compare(std::wstring_view text) const noexcept {
+					return static_cast<std::wstring_view>(*this).compare(text);
+				}
+
+				/**
+				 * @brief First code unit.
+				 * @return Unit.
+				 * @note Empty is undefined, same as `std::wstring::front`.
+				 */
+				inline wchar_t front() const noexcept {
+					return (*this)[Size{0}];
+				}
+
+				/**
+				 * @brief Last code unit.
+				 * @return Unit.
+				 * @note Empty is undefined, same as `std::wstring::back`.
+				 */
+				inline wchar_t back() const noexcept {
+					return (*this)[size() - Size{1}];
+				}
+
+				/** @} */
+
+				/**
 				 * @name Helpers
 				 * @{
 				 */
@@ -543,6 +808,23 @@ namespace StormByte {
 				void swap(WString& other) noexcept;
 
 			private:
+				static Size FromIndex(std::size_t index) noexcept {
+					return index == std::wstring_view::npos ? npos : Size{index};
+				}
+
+				template<typename Needle>
+				static Size FindAt(std::wstring_view self, Needle needle, Size pos) noexcept {
+					if (pos > Size{self.size()})
+						return npos;
+					return FromIndex(self.find(needle, static_cast<std::size_t>(pos)));
+				}
+
+				template<typename Needle>
+				static Size RFindAt(std::wstring_view self, Needle needle, Size pos) noexcept {
+					const std::size_t start = pos == npos ? std::wstring_view::npos : static_cast<std::size_t>(pos);
+					return FromIndex(self.rfind(needle, start));
+				}
+
 				WCString m_text;	///< Owned code units
 		};
 
