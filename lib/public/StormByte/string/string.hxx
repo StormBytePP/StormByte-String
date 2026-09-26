@@ -234,25 +234,25 @@ namespace StormByte {
 
 				/**
 				 * @brief Contiguous pointer; null when the buffer is null.
-				 * @return Pointer to the first byte.
+				 * @return Pointer to the first character.
 				 */
 				inline const char* data() const noexcept {
 					return static_cast<const char*>(m_text);
 				}
 
 				/**
-				 * @brief Byte count; `0` when null or empty.
-				 * @return Length.
+				 * @brief Character count; `0` when null or empty.
+				 * @return Length as @ref StormByte::Size (code units, not bytes).
 				 */
-				inline std::size_t size() const noexcept {
+				inline Size size() const noexcept {
 					return m_text.Length();
 				}
 
 				/**
 				 * @brief Same as @ref size.
-				 * @return Length.
+				 * @return Length as @ref StormByte::Size.
 				 */
-				inline std::size_t length() const noexcept {
+				inline Size length() const noexcept {
 					return size();
 				}
 
@@ -265,12 +265,12 @@ namespace StormByte {
 				}
 
 				/**
-				 * @brief Byte at @p index.
+				 * @brief Character at @p index.
 				 * @param index Position in `[0, size()]`. `size()` is the trailing NUL.
 				 * @return Character.
 				 * @note Null or `index > size()` is undefined and `assert`s when assertions are on.
 				 */
-				inline char operator[](std::size_t index) const noexcept {
+				inline char operator[](const Size& index) const noexcept {
 					return m_text[index];
 				}
 

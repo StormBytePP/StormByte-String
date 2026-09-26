@@ -47,15 +47,16 @@
 #include <string>
 
 using StormByte::BinaryData;
+using StormByte::ByteSize;
 using StormByte::Serializable;
 using StormByte::String::String;
 using StormByte::String::WString;
 
 namespace {
-	BinaryData Truncate(const BinaryData& buf, std::size_t new_size) {
-		if (new_size >= static_cast<std::size_t>(buf.size().Value()))
+	BinaryData Truncate(const BinaryData& buf, ByteSize new_size) {
+		if (new_size >= buf.size())
 			return buf;
-		return BinaryData(buf.data(), StormByte::Size{ static_cast<std::uint64_t>(new_size) });
+		return BinaryData(buf.data(), new_size);
 	}
 }
 
@@ -82,7 +83,7 @@ int test_serialize_string() {
 		RETURN_TEST("test_serialize_string", 1);
 	}
 	ASSERT_TRUE("test_serialize_string", data == expected.value());
-	ASSERT_EQUAL("test_serialize_string", Serializable<String>::Size(data), static_cast<std::size_t>(buffer.size().Value()));
+	ASSERT_EQUAL("test_serialize_string", Serializable<String>::Size(data), buffer.size());
 	RETURN_TEST("test_serialize_string", 0);
 }
 
@@ -101,7 +102,7 @@ int test_serialize_string_empty() {
 
 int test_serialize_string_huge_size() {
 	auto clean = Serializable<String>(String("safe")).Serialize();
-	if (clean.size() < StormByte::Size{ sizeof(std::uint64_t) })
+	if (clean.size() < ByteSize{sizeof(std::uint64_t)})
 		RETURN_TEST("test_serialize_string_huge_size", 1);
 	auto buf = clean;
 	std::uint64_t huge = static_cast<std::uint64_t>(-1);
@@ -131,8 +132,8 @@ int test_serialize_string_null_is_empty_wire() {
 
 int test_serialize_string_truncated() {
 	auto buffer = Serializable<String>(String("TruncationTest")).Serialize();
-	const auto n = static_cast<std::size_t>(buffer.size().Value());
-	for (std::size_t len = 0; len < n; ++len) {
+	const ByteSize n = buffer.size();
+	for (ByteSize len; len < n; ++len) {
 		auto truncated = Truncate(buffer, len);
 		auto result = Serializable<String>::Deserialize(truncated);
 		if (result) {
@@ -158,7 +159,7 @@ int test_serialize_wstring() {
 		RETURN_TEST("test_serialize_wstring", 1);
 	}
 	ASSERT_TRUE("test_serialize_wstring", data == expected.value());
-	ASSERT_EQUAL("test_serialize_wstring", Serializable<WString>::Size(data), static_cast<std::size_t>(buffer.size().Value()));
+	ASSERT_EQUAL("test_serialize_wstring", Serializable<WString>::Size(data), buffer.size());
 	RETURN_TEST("test_serialize_wstring", 0);
 }
 
@@ -203,8 +204,8 @@ int test_serialize_wstring_null_is_empty_wire() {
 
 int test_serialize_wstring_truncated() {
 	auto buffer = Serializable<WString>(WString(L"TruncationTest")).Serialize();
-	const auto n = static_cast<std::size_t>(buffer.size().Value());
-	for (std::size_t len = 0; len < n; ++len) {
+	const ByteSize n = buffer.size();
+	for (ByteSize len; len < n; ++len) {
 		auto truncated = Truncate(buffer, len);
 		auto result = Serializable<WString>::Deserialize(truncated);
 		if (result) {

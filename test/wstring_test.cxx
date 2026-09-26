@@ -54,6 +54,7 @@
 #include <unordered_set>
 #include <vector>
 
+using StormByte::Size;
 using StormByte::WCString;
 using StormByte::String::String;
 using StormByte::String::WString;
@@ -185,7 +186,7 @@ int test_construct_from_empty() {
 	int result = 0;
 	WString text(L"");
 	ASSERT_TRUE("test_construct_from_empty", static_cast<bool>(text));
-	ASSERT_EQUAL("test_construct_from_empty", 0u, text.size());
+	ASSERT_EQUAL("test_construct_from_empty", Size{0}, text.size());
 	ASSERT_TRUE("test_construct_from_empty", text.data() != nullptr);
 	RETURN_TEST("test_construct_from_empty", result);
 }
@@ -193,7 +194,7 @@ int test_construct_from_empty() {
 int test_construct_from_ptr() {
 	int result = 0;
 	WString text(L"abc");
-	ASSERT_EQUAL("test_construct_from_ptr", 3u, text.size());
+	ASSERT_EQUAL("test_construct_from_ptr", Size{3}, text.size());
 	ASSERT_EQUAL("test_construct_from_ptr", L'a', text[0]);
 	ASSERT_EQUAL("test_construct_from_ptr", L'c', text[2]);
 	ASSERT_EQUAL("test_construct_from_ptr", L'\0', text[3]);
@@ -203,7 +204,7 @@ int test_construct_from_ptr() {
 int test_construct_from_view() {
 	int result = 0;
 	WString text(std::wstring_view(L"hi"));
-	ASSERT_EQUAL("test_construct_from_view", 2u, text.size());
+	ASSERT_EQUAL("test_construct_from_view", Size{2}, text.size());
 	ASSERT_TRUE("test_construct_from_view", text == L"hi");
 	RETURN_TEST("test_construct_from_view", result);
 }
@@ -220,7 +221,7 @@ int test_default_is_null() {
 	WString text;
 	ASSERT_FALSE("test_default_is_null", static_cast<bool>(text));
 	ASSERT_TRUE("test_default_is_null", text.empty());
-	ASSERT_EQUAL("test_default_is_null", 0u, text.size());
+	ASSERT_EQUAL("test_default_is_null", Size{0}, text.size());
 	ASSERT_TRUE("test_default_is_null", text.data() == nullptr);
 	RETURN_TEST("test_default_is_null", result);
 }

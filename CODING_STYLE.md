@@ -49,7 +49,7 @@ No anonymous namespace in a public header.
 ```
 STORMBYTE_PUBLIC CString GenerateUUIDv4() noexcept;
 STORMBYTE_PUBLIC const Category<Code>& category() noexcept;
-static STORMBYTE_PUBLIC std::size_t Size(const std::string& data) noexcept;
+static STORMBYTE_PUBLIC ByteSize Size(const std::string& data) noexcept;
 ```
 
 Do not write `CString STORMBYTE_PUBLIC Foo();`.
@@ -74,7 +74,7 @@ template STORMBYTE_INSTANTIATE Size::Size(int) noexcept;
 
 Do not repeat `STORMBYTE_PUBLIC` on an ordinary `.cxx` definition.
 
-Values that leave the shared library are `CString`, `WCString`, `Size`, `Fault`, or a `const char*` owned by this library. Do not return `std::string` or `std::size_t` as the object that crosses the boundary.
+Values that leave the shared library are `CString`, `WCString`, `Size`, `ByteSize`, `Fault`, or a `const char*` owned by this library. Do not return `std::string` or `std::size_t` as the object that crosses the boundary. A text length is `Size`. A byte count is `ByteSize`.
 
 ## Doxygen
 

@@ -70,9 +70,9 @@ namespace StormByte {
 			/**
 			 * @brief Serialized size of @p data.
 			 * @param data Value to measure.
-			 * @return Size in bytes.
+			 * @return Size in bytes as @ref ByteSize.
 			 */
-			static STORMBYTE_STRING_PUBLIC std::size_t Size(const String::String& data) noexcept;
+			static STORMBYTE_STRING_PUBLIC ByteSize Size(const String::String& data) noexcept;
 
 			/**
 			 * @brief Encodes @p data.
@@ -101,9 +101,9 @@ namespace StormByte {
 			/**
 			 * @brief Serialized size of @p data.
 			 * @param data Value to measure.
-			 * @return Size in bytes.
+			 * @return Size in bytes as @ref ByteSize.
 			 */
-			static STORMBYTE_STRING_PUBLIC std::size_t Size(const String::WString& data) noexcept;
+			static STORMBYTE_STRING_PUBLIC ByteSize Size(const String::WString& data) noexcept;
 
 			/**
 			 * @brief Encodes @p data.
